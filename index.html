@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Kim Thong POS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body { font-family: Arial; background:#111; color:#fff; text-align:center; }
+button { padding:15px; margin:10px; width:80%; font-size:18px; border-radius:10px; }
+input, select { padding:10px; margin:5px; width:80%; }
+.card { background:#222; padding:15px; margin:10px; border-radius:10px; }
+.red { color:red; }
+</style>
+</head>
+
+<body>
+
+<h1>KIM THÔNG POS</h1>
+
+<div class="card">
+<h3>Tạo Vé</h3>
+<input id="name" placeholder="Tên khách">
+<select id="session">
+<option value="5">5h</option>
+<option value="10">10h</option>
+</select>
+<input id="prepaid" type="number" placeholder="Thu trước">
+<button onclick="start()">🎫 BẮT ĐẦU</button>
+</div>
+
+<div class="card">
+<h3>Đang Câu</h3>
+<div id="timer">⏱ 0</div>
+<div id="warning"></div>
+</div>
+
+<div class="card">
+<h3>Bán Hàng</h3>
+<button onclick="addSale(10000)">+ Nước (10k)</button>
+<button onclick="addSale(15000)">+ Mì (15k)</button>
+<button onclick="addSale(5000)">+ Thuốc (5k)</button>
+<div>Tổng bán: <span id="sales">0</span></div>
+</div>
+
+<div class="card">
+<h3>Phiếu Chi (Mua Cá)</h3>
+<input id="fish" type="number" placeholder="Tiền cá">
+<button onclick="addExpense()">Nhập Chi</button>
+<div>Chi: <span id="expense">0</span></div>
+</div>
+
+<div class="card">
+<button onclick="endSession()">💰 THANH TOÁN</button>
+<div id="result"></div>
+</div>
+
+<script>
+
+let startTime;
+let sessionType = 5;
+let prepaid = 0;
+let sales = 0;
+let expense = 0;
+
+function start(){
+  startTime = new Date();
+  sessionType = document.getElementById("session").value;
+  prepaid = parseInt(document.getElementById("prepaid").value || 0);
+  alert("Đã bắt đầu");
+}
+
+function addSale(amount){
+  sales += amount;
+  document.getElementById("sales").innerText = sales;
+}
+
+function addExpense(){
+  let fish = parseInt(document.getElementById("fish").value || 0);
+
+  if(fish > 0){
+    let surcharge = sessionType == 5 ? 100000 : 200000;
+    expense = fish + surcharge;
+  }
+
+  document.getElementById("expense").innerText = expense;
+}
+
+function endSession(){
+  let hours = (new Date() - startTime) / 3600000;
+
+  let rate = sessionType == 5 ? 200000 : 400000;
+  let totalTime = rate;
+
+  let total = totalTime + sales - expense;
+  let final = total - prepaid;
+
+  let resultText = `
+  Tổng giờ: ${totalTime}
+  Bán hàng: ${sales}
+  Chi: ${expense}
+  ------------------
+  Tổng: ${total}
+  Thu trước: ${prepaid}
+  `;
+
+  if(final > 0){
+    resultText += `\nKhách trả thêm: ${final}`;
+  }else{
+    resultText += `\nTrả lại khách: ${Math.abs(final)}`;
+  }
+
+  document.getElementById("result").innerText = resultText;
+}
+
+setInterval(()=>{
+  if(startTime){
+    let diff = Math.floor((new Date()-startTime)/1000);
+    document.getElementById("timer").innerText = "⏱ " + diff + "s";
+
+    let limit = sessionType * 3600;
+    if(diff > limit - 900){
+      document.getElementById("warning").innerText = "⚠ Sắp hết giờ";
+    }
+  }
+},1000);
+
+</script>
+
+</body>
+</html>
