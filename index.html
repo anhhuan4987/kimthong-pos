@@ -57,52 +57,70 @@ input, select { padding:10px; margin:5px; width:80%; }
 
 <script>
 
+<script>
+
 let startTime;
 let sessionType = 5;
 let prepaid = 0;
 let sales = 0;
 let expense = 0;
 
+// LOAD DATA
+function loadData(){
+  let data = JSON.parse(localStorage.getItem("kimthong") || "{}");
+  if(data.startTime){
+    startTime = new Date(data.startTime);
+    sales = data.sales || 0;
+    expense = data.expense || 0;
+    prepaid = data.prepaid || 0;
+    sessionType = data.sessionType || 5;
+  }
+}
+
+// SAVE DATA
+function saveData(){
+  localStorage.setItem("kimthong", JSON.stringify({
+    startTime, sales, expense, prepaid, sessionType
+  }));
+}
+
 function start(){
   startTime = new Date();
   sessionType = document.getElementById("session").value;
   prepaid = parseInt(document.getElementById("prepaid").value || 0);
+  saveData();
   alert("Đã bắt đầu");
 }
 
 function addSale(amount){
   sales += amount;
+  saveData();
   document.getElementById("sales").innerText = sales;
 }
 
 function addExpense(){
   let fish = parseInt(document.getElementById("fish").value || 0);
-
   if(fish > 0){
     let surcharge = sessionType == 5 ? 100000 : 200000;
     expense = fish + surcharge;
   }
-
+  saveData();
   document.getElementById("expense").innerText = expense;
 }
 
 function endSession(){
-  let hours = (new Date() - startTime) / 3600000;
-
   let rate = sessionType == 5 ? 200000 : 400000;
-  let totalTime = rate;
-
-  let total = totalTime + sales - expense;
+  let total = rate + sales - expense;
   let final = total - prepaid;
 
   let resultText = `
-  Tổng giờ: ${totalTime}
-  Bán hàng: ${sales}
-  Chi: ${expense}
-  ------------------
-  Tổng: ${total}
-  Thu trước: ${prepaid}
-  `;
+Tổng giờ: ${rate}
+Bán hàng: ${sales}
+Chi: ${expense}
+------------------
+Tổng: ${total}
+Thu trước: ${prepaid}
+`;
 
   if(final > 0){
     resultText += `\nKhách trả thêm: ${final}`;
@@ -111,6 +129,9 @@ function endSession(){
   }
 
   document.getElementById("result").innerText = resultText;
+
+  // RESET DATA
+  localStorage.removeItem("kimthong");
 }
 
 setInterval(()=>{
@@ -124,6 +145,10 @@ setInterval(()=>{
     }
   }
 },1000);
+
+loadData();
+
+</script>
 
 </script>
 
